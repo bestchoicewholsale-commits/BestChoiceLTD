@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BestChoice Wholesale</title>
+<style>
+:root{--green:#16803c;--dark:#111827;--muted:#667085;--line:#e5e7eb;--bg:#f5f7fa}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:#101828}
+.top{background:var(--dark);color:#fff;text-align:center;padding:9px 12px;font-size:13px}.hero{background:#fff;border-bottom:1px solid var(--line);padding:18px 14px}.wrap{max-width:1100px;margin:auto}.head{display:flex;justify-content:space-between;align-items:center;gap:12px}.logo{font-size:24px;font-weight:900}.sub{color:var(--muted);font-size:13px;margin-top:3px}.cart{border:0;background:var(--green);color:#fff;border-radius:12px;padding:12px 15px;font-weight:900;font-size:14px}
+.tools{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:12px 14px}.search{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:14px;font-size:16px;background:#fff}.tabs{display:flex;gap:9px;overflow-x:auto;margin-top:10px;padding-bottom:2px}.tab{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 15px;font-size:15px}.tab.active{background:var(--dark);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px 0 28px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px;display:flex;flex-direction:column;min-width:0;box-shadow:0 1px 2px #0000000b}.pic{height:170px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;overflow:hidden}.pic img{width:100%;height:100%;object-fit:contain}.fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;color:#98a2b3;font-size:13px;text-align:center;padding:10px}.fallback b{font-size:30px;margin-bottom:6px}.name{font-weight:850;font-size:16px;line-height:1.2;margin-top:10px}.pack{font-size:13px;color:var(--muted);margin:5px 0 7px;min-height:17px}.price{font-weight:900;font-size:17px}.row{display:flex;gap:7px;margin-top:10px}.qty{width:64px;border:1px solid var(--line);border-radius:10px;padding:10px 7px;font-size:16px;text-align:center}.add{flex:1;background:var(--green);color:#fff;border:0;border-radius:10px;font-weight:900;font-size:14px;min-width:0}.add.added{background:#0f6b32}.empty{text-align:center;color:var(--muted);padding:50px 10px;grid-column:1/-1}
+.drawer{position:fixed;inset:0;background:#0006;display:none;z-index:20}.drawer.open{display:block}.panel{position:absolute;right:0;top:0;height:100%;width:min(430px,94%);background:#fff;padding:18px;overflow:auto}.close{float:right;border:0;background:#eee;border-radius:10px;padding:8px}.item{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:12px 0;gap:10px}.send{width:100%;padding:14px;background:var(--green);color:#fff;border:0;border-radius:12px;font-weight:900;margin-top:12px}.cart-controls button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:4px 9px;font-size:18px}
+@media(min-width:760px){.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.pic{height:210px}}
+</style>
+</head>
+<body>
+<div class="top">Wholesale ordering • Orders sent directly to WhatsApp</div>
+<header class="hero"><div class="wrap head"><div><div class="logo">BestChoice Wholesale</div><div class="sub">Drinks • Bags & Household</div></div><button class="cart" id="cartBtn">Cart 0</button></div></header>
+<section class="tools"><div class="wrap"><input id="search" class="search" placeholder="Search products..." autocomplete="off"><div class="tabs" id="tabs"></div></div></section>
+<main class="wrap"><div id="grid" class="grid"></div></main>
+<div id="drawer" class="drawer"><div class="panel"><button class="close" id="close">Close</button><h2>Your order</h2><div id="cartItems"></div><label>Shop / customer name<input id="customer" class="search" style="margin-top:6px"></label><button class="send" id="send">Send order on WhatsApp</button></div></div>
+<script>
+const WA='447445264674';let products=[];let cart={};let cat='All products';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function init(){try{const r=await fetch('products.json?v='+Date.now());if(!r.ok)throw new Error('products.json');products=await r.json();renderTabs();render()}catch(e){$('grid').innerHTML='<div class="empty">Could not load the products. Please refresh the page.</div>'}}
+function renderTabs(){const cats=['All products',...new Set(products.map(p=>p.cat).filter(Boolean))];$('tabs').innerHTML=cats.map(c=>`<button class="tab ${c===cat?'active':''}" onclick="setCat(${JSON.stringify(c)})">${esc(c)}</button>`).join('')}
+function setCat(c){cat=c;renderTabs();render()}
+function imageHtml(p){if(!p.img)return `<div class="fallback"><b>📦</b><span>Image coming soon</span></div>`;return `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><div class="fallback" style="display:none"><b>📦</b><span>${esc(p.name)}</span></div>`}
+function render(){const q=$('search').value.trim().toLowerCase();const list=products.filter(p=>(cat==='All products'||p.cat===cat)&&(`${p.name} ${p.pack||''}`.toLowerCase().includes(q)));$('grid').innerHTML=list.length?list.map(p=>{const n=cart[p.id]||0;return `<article class="card"><div class="pic">${imageHtml(p)}</div><div class="name">${esc(p.name)}</div><div class="pack">${esc(p.pack||'')}</div><div class="price">${Number(p.price||0)>0?`£${Number(p.price).toFixed(2)}`:'Price to confirm'}</div><div class="row"><input class="qty" type="number" min="1" value="${n||1}" id="q-${esc(p.id)}"><button class="add ${n?'added':''}" onclick="add('${esc(p.id)}')">${n?`Added ✓ (${n})`:'Add'}</button></div></article>`}).join(''):'<div class="empty">No products found.</div>'}
+function add(id){const input=$('q-'+id);const amount=Math.max(1,parseInt(input?.value||1,10));cart[id]=(cart[id]||0)+amount;updateCart();render();const newInput=$('q-'+id);if(newInput)newInput.value=cart[id]}
+function updateCart(){const count=Object.values(cart).reduce((a,b)=>a+b,0);$('cartBtn').textContent=`Cart ${count}`}
+function openCart(){const entries=Object.entries(cart);$('cartItems').innerHTML=entries.length?entries.map(([id,n])=>{const p=products.find(x=>x.id===id);if(!p)return '';return `<div class="item"><div><b>${esc(p.name)}</b><div class="pack">${esc(p.pack||'')}</div></div><div class="cart-controls"><b>× ${n}</b><br><button onclick="dec('${id}')">−</button> <button onclick="inc('${id}')">+</button></div></div>`}).join(''):'<p>Your cart is empty.</p>';$('drawer').classList.add('open')}
+function inc(id){cart[id]=(cart[id]||0)+1;updateCart();openCart();render()}
+function dec(id){if(!cart[id])return;cart[id]--;if(cart[id]<=0)delete cart[id];updateCart();openCart();render()}
+$('search').oninput=render;$('cartBtn').onclick=openCart;$('close').onclick=()=>$('drawer').classList.remove('open');$('drawer').onclick=e=>{if(e.target.id==='drawer')$('drawer').classList.remove('open')};$('send').onclick=()=>{if(!Object.keys(cart).length){alert('Your cart is empty.');return}let name=$('customer').value.trim()||'Customer';let lines=['*BestChoice Wholesale Order*','',`Customer: ${name}`,''];Object.entries(cart).forEach(([id,n])=>{const p=products.find(x=>x.id===id);if(p)lines.push(`${n} × ${p.name}${Number(p.price||0)>0?` — £${(Number(p.price)*n).toFixed(2)}`:''}`)});const total=Object.entries(cart).reduce((s,[id,n])=>{const p=products.find(x=>x.id===id);return s+Number(p?.price||0)*n},0);lines.push('',`*Total: £${total.toFixed(2)}*`);location.href=`https://wa.me/${WA}?text=${encodeURIComponent(lines.join('\n'))}`};
+init();
+</script>
+</body></html>
